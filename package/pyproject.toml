@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "watch-this"
+version = "0.1.0"
+description = "A Django app that helps with video upload, encoding and serving"
+authors = ["Rémy Sanchez <remy.sanchez@hyperthese.net>"]
+license = "WTFPL"
+readme = "README.md"
+packages = [{include = "watch_this", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+django = ">=3.0.0"
+wagtail = ">=4.0.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

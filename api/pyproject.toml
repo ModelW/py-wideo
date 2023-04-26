@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "watch_this_api"
+version = "0.1.0"
+description = ""
+authors = ["Rémy Sanchez <remy.sanchez@hyperthese.net>"]
+license = "Proprietary"
+
+packages = [
+    {include = "watch_this"},
+]
+
+[tool.poetry.dependencies]
+python = "~3.10"
+modelw-preset-django = {extras = ["celery", "wagtail", "gunicorn"], version = "~2023.3.0"}
+drf-spectacular = {extras = ["sidecar"], version = "^0.26.1"}
+watch-this = {path = "../package"}
+
+[tool.poetry.dev-dependencies]
+black = "*"
+isort = "*"
+ipython = "*"
+
+[tool.isort]
+profile = "black"
+known_first_party = "watch_this"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
