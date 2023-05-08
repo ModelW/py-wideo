@@ -55,7 +55,6 @@ def backward(apps: AppConfig, _):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("wagtailcore", "0077_alter_revision_user"),
         ("cms", "0001_initial"),

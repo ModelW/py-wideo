@@ -8,6 +8,7 @@ from wagtail.admin import urls as wagtailadmin_urls
 from wagtail.documents import urls as wagtaildocs_urls
 
 from watch_this.apps.people.views import MeViewSet
+from watch_this.upload import urls as upload_urls
 
 admin.site.site_title = _("Watch This")
 admin.site.site_header = _("Watch This")
@@ -22,6 +23,7 @@ router.register("me", MeViewSet, basename="me")
 
 urlpatterns = [
     path("back/admin/", admin.site.urls),
+    path("back/api/upload/", include(upload_urls)),
     path("back/api/", include(router.urls)),
     path("wubba-lubba-dub-dub/", include(wagtailadmin_urls)),
     path("back/documents/", include(wagtaildocs_urls)),

@@ -9,8 +9,8 @@ packages = [{include = "watch_this", from = "src"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-django = ">=3.0.0"
-wagtail = ">=4.0.0"
+django = "3.x | 4.x"
+wagtail = "4.x"
 
 
 [build-system]

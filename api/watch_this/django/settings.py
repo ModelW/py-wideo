@@ -29,6 +29,8 @@ with EnvManager(ModelWDjango()) as env:
         "drf_spectacular_sidecar",
         "watch_this.apps.cms",
         "watch_this.apps.people",
+        "watch_this.base",
+        "watch_this.upload",
     ]
 
     # ---
