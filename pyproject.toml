@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "watch-this"
+version = "0.0.0"
+description = "Add video goodness to your Wagtail website"
+authors = []
+license = "WTFPL"
+readme = "README.md"
+packages = [{include = "watch_this", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.group.dev.dependencies]
+black = "*"
+isort = "*"
+ipython = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
