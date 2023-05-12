@@ -13,6 +13,7 @@ packages = [
 python = "~3.10"
 modelw-preset-django = {extras = ["celery", "channels", "wagtail"], version = ">=2023.4.0b1,<2023.7.0", allow-prereleases = true}
 drf-spectacular = {extras = ["sidecar"], version = "^0.26.2"}
+django-extensions = "^3.2.1"
 watch-this = {path = "../..", develop = true}
 
 [tool.poetry.dev-dependencies]
