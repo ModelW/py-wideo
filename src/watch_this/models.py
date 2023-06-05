@@ -74,6 +74,19 @@ class AbstractVideo(index.Indexed, CollectionMember, TimestampedModel, UserUploa
         ),
     )
     tags = TaggableManager(help_text=None, blank=True, verbose_name=_("tags"))
+    search_fields = CollectionMember.search_fields + [
+        index.SearchField("title", boost=10),
+        index.AutocompleteField("title"),
+        index.FilterField("title"),
+        index.RelatedFields(
+            "tags",
+            [
+                index.SearchField("name", boost=10),
+                index.AutocompleteField("name"),
+            ],
+        ),
+        index.FilterField("uploaded_by_user"),
+    ]
 
 
 class Video(AbstractVideo):
