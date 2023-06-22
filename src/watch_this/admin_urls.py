@@ -11,5 +11,7 @@ urlpatterns = [
         name="listing_results",
     ),
     path("add/", watch_this.views.add, name="add"),
+    path("<int:video_id>/", watch_this.views.edit, name="edit"),
+    path("<int:video_id>/delete/", watch_this.views.delete, name="delete"),
     path("upload/", watch_this.views.upload_file, name="upload"),
 ]

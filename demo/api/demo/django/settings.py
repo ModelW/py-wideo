@@ -28,6 +28,7 @@ with EnvManager(ModelWDjango()) as env:
         "drf_spectacular",
         "drf_spectacular_sidecar",
         "django_extensions",
+        "django.forms",
         "wagtail.contrib.modeladmin",
         "watch_this",
         "demo.apps.realtime",

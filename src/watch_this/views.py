@@ -1,22 +1,29 @@
+import json
+
 from django.conf import settings
+from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.template.response import TemplateResponse
-from django.urls import reverse
+from django.urls import NoReverseMatch, reverse
 from django.utils.decorators import method_decorator
+from django.utils.http import urlencode
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy, ngettext
 from django.views.generic import TemplateView
 from rest_framework import status
 from wagtail.admin import messages
 from wagtail.admin.auth import PermissionPolicyChecker
 from wagtail.admin.forms.search import SearchForm
 from wagtail.admin.models import popular_tags_for_model
+from wagtail.admin.utils import get_valid_next_url_from_request
+from wagtail.admin.views import generic
 from wagtail.models import Collection
 from wagtail.search.backends import get_search_backend
 
 from . import get_video_model
-from .forms import UploadedVideoForm, get_video_form
+from .forms import BaseVideoForm, UploadedVideoForm, VideoForm
 from .permissions import permission_policy
 
 permission_checker = PermissionPolicyChecker(permission_policy)
@@ -169,13 +176,49 @@ class ListingResultsView(BaseListingView):
     template_name = "watch_this/videos/results.html"
 
 
+class DeleteView(generic.DeleteView):
+    model = get_video_model()
+    pk_url_kwarg = "video_id"
+    permission_policy = permission_policy
+    permission_required = "delete"
+    header_icon = "video"
+    template_name = "watch_this/videos/confirm_delete.html"
+    usage_url_name = "watch_this:video_usage"
+    delete_url_name = "watch_this:delete"
+    index_url_name = "watch_this:index"
+    page_title = gettext_lazy("Delete video")
+
+    def setup(self, request, *args, **kwargs):
+        return super().setup(request, *args, **kwargs)
+
+    def get_object(self, queryset=None):
+        return super().get_object(queryset)
+
+    def user_has_permission(self, permission):
+        return self.permission_policy.user_has_permission_for_instance(
+            self.request.user, permission, self.object
+        )
+
+    @property
+    def confirmation_message(self):
+        return ngettext(
+            "Are you sure you want to delete this video?",
+            "Are you sure you want to delete these videos?",
+            1,
+        )
+
+    def get_success_message(self):
+        return _("Video '%(video_title)s' deleted.") % {
+            "video_title": self.object.title
+        }
+
+
 def add(request: HttpRequest) -> HttpResponse:
     VideoModel = get_video_model()
-    VideoForm = get_video_form()
 
     if request.method == "POST":
         video = VideoModel(uploaded_by_user=request.user)
-        form = VideoForm(request.POST, request.FILES, instance=video)
+        form = BaseVideoForm(request.POST, request.FILES, instance=video)
 
         if form.is_valid():
             # form.save()
@@ -186,16 +229,17 @@ def add(request: HttpRequest) -> HttpResponse:
             messages.success(
                 request,
                 _("Video '%(video_title)s' added.") % {"video_title": video.title},
-                # buttons=[
-                #     messages.button(
-                #         reverse("watch_this:edit", args=(video.id,)), _("Edit")
-                #     )
-                # ],
+                buttons=[
+                    messages.button(
+                        reverse("watch_this:edit", args=(video.id,)), _("Edit")
+                    )
+                ],
             )
 
             return redirect("watch_this:index")
         else:
             messages.error(request, _("The video could not be created due to errors."))
+            form = VideoForm(request.POST, request.FILES, instance=video)
     else:
         form = VideoForm()
 
@@ -204,6 +248,97 @@ def add(request: HttpRequest) -> HttpResponse:
         "watch_this/videos/add.html",
         {
             "form": form,
+        },
+    )
+
+
+@permission_checker.require("change")
+def edit(request, video_id):
+    Video = get_video_model()
+    video = get_object_or_404(Video, id=video_id)
+
+    if not permission_policy.user_has_permission_for_instance(
+        request.user, "change", video
+    ):
+        raise PermissionDenied
+
+    next_url = get_valid_next_url_from_request(request)
+
+    if request.method == "POST":
+        form = BaseVideoForm(request.POST, request.FILES, instance=video)
+        if form.is_valid():
+            form.save()
+
+            edit_url = reverse("watch_this:edit", args=(video.id,))
+            redirect_url = "watch_this:index"
+            if next_url:
+                edit_url = f"{edit_url}?{urlencode({'next': next_url})}"
+                redirect_url = next_url
+
+            messages.success(
+                request,
+                _("Video '%(video_title)s' updated.") % {"video_title": video.title},
+                buttons=[messages.button(edit_url, _("Edit again"))],
+            )
+            return redirect(redirect_url)
+        else:
+            messages.error(request, _("The video could not be saved due to errors."))
+            form = VideoForm(request.POST, request.FILES, instance=video)
+    else:
+        form = VideoForm(instance=video)
+
+    # Check if we should enable the frontend url generator
+    try:
+        reverse("watch_this_serve", args=("foo", "1", "bar"))
+        url_generator_enabled = True
+    except NoReverseMatch:
+        url_generator_enabled = False
+
+    # try:
+    #     filesize = video.get_file_size()
+    # except SourceVideoIOError:
+    #     filesize = None
+
+    filesize = None
+
+    return TemplateResponse(
+        request,
+        "watch_this/videos/edit.html",
+        {
+            "video": video,
+            "form": form,
+            "url_generator_enabled": url_generator_enabled,
+            "filesize": filesize,
+            "user_can_delete": permission_policy.user_has_permission_for_instance(
+                request.user, "delete", video
+            ),
+            "next": next_url,
+        },
+    )
+
+
+@permission_checker.require("delete")
+def delete(request, video_id):
+    video = get_object_or_404(get_video_model(), id=video_id)
+
+    if not permission_policy.user_has_permission_for_instance(
+        request.user, "delete", video
+    ):
+        raise PermissionDenied
+
+    next_url = get_valid_next_url_from_request(request)
+
+    if request.method == "POST":
+        video.delete()
+        messages.success(request, _("Video '{0}' deleted.").format(video.title))
+        return redirect(next_url) if next_url else redirect("watch_this:index")
+
+    return TemplateResponse(
+        request,
+        "watch_this/videos/confirm_delete.html",
+        {
+            "video": video,
+            "next": next_url,
         },
     )
 
@@ -217,5 +352,5 @@ def upload_file(request: HttpRequest) -> HttpResponse:
     if not form.is_valid():
         return HttpResponse(status=status.HTTP_400_BAD_REQUEST, content=form.errors)
 
-    form.save()
-    return HttpResponse(status=status.HTTP_201_CREATED, content=form.data)
+    instance = form.save()
+    return HttpResponse(status=status.HTTP_201_CREATED, content=instance.id)

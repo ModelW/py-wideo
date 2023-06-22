@@ -56,10 +56,11 @@ class AbstractVideo(index.Indexed, CollectionMember, TimestampedModel, UserUploa
         failed = "failed"
 
     title = models.CharField(max_length=255, verbose_name=_("title"))
-    file = models.FileField(
-        upload_to=upload_to,
+    upload = models.ForeignKey(
+        to=UploadedVideo,
+        on_delete=models.PROTECT,
         verbose_name=_("file"),
-        help_text=_("The rendered video file"),
+        help_text=_("The uploaded video file"),
     )
     status = models.CharField(
         max_length=max(len(x) for x, _ in ProcessStatus.choices),
@@ -92,7 +93,7 @@ class AbstractVideo(index.Indexed, CollectionMember, TimestampedModel, UserUploa
 class Video(AbstractVideo):
     admin_form_fields = (
         "title",
-        "file",
+        "upload",
         "tags",
     )
 
@@ -147,3 +148,7 @@ class Render(AbstractRender):
         verbose_name=_("video"),
         help_text=_("The video that was rendered"),
     )
+
+
+class SourceVideoIOError(IOError):
+    pass

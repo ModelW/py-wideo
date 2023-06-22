@@ -38,4 +38,4 @@ def upload_to(instance: Model, filename: str) -> str:
     dir_structure = os.path.join(uuid_str[:2], uuid_str[2:4], uuid_str[4:6])
 
     new_filename = f"{slug}{file_ext}"
-    return os.path.join(dir_structure, new_filename)
+    return os.path.join(__package__, dir_structure, new_filename)

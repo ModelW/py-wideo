@@ -1,9 +1,11 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from wagtail.admin.panels import FieldPanel
 from wagtail.core.models import Page
 from wagtail.documents.models import AbstractDocument
 from wagtail.images.models import AbstractImage, AbstractRendition
 from wagtail.images.models import Image as DefaultImage
+from watch_this.fields import VideoField
 
 
 class CustomImage(AbstractImage):
@@ -71,3 +73,8 @@ class HomePage(Page):
     """
 
     parent_page_types = ["wagtailcore.Page"]
+    content_panels = [
+        *Page.content_panels,
+        FieldPanel("video"),
+    ]
+    video = VideoField(null=True)
