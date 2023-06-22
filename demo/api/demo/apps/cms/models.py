@@ -1,10 +1,13 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from wagtail.admin.panels import FieldPanel
+from wagtail.blocks import StreamBlock
 from wagtail.core.models import Page
 from wagtail.documents.models import AbstractDocument
+from wagtail.fields import StreamField
 from wagtail.images.models import AbstractImage, AbstractRendition
 from wagtail.images.models import Image as DefaultImage
+from watch_this.blocks import VideoBlock
 from watch_this.fields import VideoField
 
 
@@ -73,8 +76,18 @@ class HomePage(Page):
     """
 
     parent_page_types = ["wagtailcore.Page"]
+
+    video = VideoField(null=True)
+
+    video_blocks = StreamField(
+        StreamBlock([("video", VideoBlock())]),
+        null=True,
+        blank=True,
+        use_json_field=True,
+    )
+
     content_panels = [
         *Page.content_panels,
-        FieldPanel("video"),
+        FieldPanel("video", icon="video"),
+        FieldPanel("video_blocks", icon="video"),
     ]
-    video = VideoField(null=True)

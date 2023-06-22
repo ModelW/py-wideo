@@ -6,6 +6,7 @@ from django.utils.translation import gettext_lazy as _
 from taggit.managers import TaggableManager
 from wagtail.models import CollectionMember
 from wagtail.search import index
+from wagtail.snippets.models import register_snippet
 
 from .storage import upload_to
 
@@ -90,12 +91,16 @@ class AbstractVideo(index.Indexed, CollectionMember, TimestampedModel, UserUploa
     ]
 
 
+@register_snippet
 class Video(AbstractVideo):
     admin_form_fields = (
         "title",
         "upload",
         "tags",
     )
+
+    def __str__(self):
+        return self.title
 
 
 class AbstractRender(TimestampedModel):
