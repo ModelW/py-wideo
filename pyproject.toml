@@ -10,6 +10,7 @@ packages = [{include = "watch_this", from = "src"}]
 [tool.poetry.dependencies]
 python = "^3.10"
 wagtail = "~4.1"
+celery = "^5.3"
 
 [tool.poetry.group.dev.dependencies]
 black = "*"

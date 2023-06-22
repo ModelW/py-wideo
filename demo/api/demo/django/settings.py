@@ -1,5 +1,6 @@
 from importlib import metadata
 
+from celery.schedules import crontab
 from model_w.env_manager import EnvManager
 from model_w.preset.django import ModelWDjango
 
@@ -81,3 +82,14 @@ with EnvManager(ModelWDjango()) as env:
     WAGTAIL_SITE_NAME = "Demo"
     WAGTAILIMAGES_IMAGE_MODEL = "cms.CustomImage"
     WAGTAILDOCS_DOCUMENT_MODEL = "cms.CustomDocument"
+
+    # ---
+    # Celery
+    # ---
+
+    CELERY_BEAT_SCHEDULE = {
+        "watch_this.tasks.delete_orphan_uploaded_videos": {
+            "task": "watch_this.tasks.delete_orphan_uploaded_videos",
+            "schedule": crontab(minute="*/5", hour="*"),
+        },
+    }
