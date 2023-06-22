@@ -1,4 +1,4 @@
-from wagtail.blocks import StructBlock, BooleanBlock
+from wagtail.blocks import BooleanBlock, StructBlock
 from wagtail.snippets.blocks import SnippetChooserBlock
 
 
