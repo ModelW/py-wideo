@@ -3,7 +3,7 @@ import json
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, QueryDict
 from django.shortcuts import get_object_or_404, redirect
 from django.template.response import TemplateResponse
 from django.urls import NoReverseMatch, reverse
@@ -265,7 +265,9 @@ def edit(request, video_id):
     next_url = get_valid_next_url_from_request(request)
 
     if request.method == "POST":
-        form = BaseVideoForm(request.POST, request.FILES, instance=video)
+        form_data = request.POST.copy()
+        form_data["upload"] = form_data.get("upload") or video.upload_id
+        form = BaseVideoForm(form_data, request.FILES, instance=video)
         if form.is_valid():
             form.save()
 
