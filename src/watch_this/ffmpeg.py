@@ -1,4 +1,5 @@
 from subprocess import run
+from typing import Optional
 
 import magic
 from django.core.files.uploadedfile import (
@@ -10,7 +11,10 @@ from django.core.files.uploadedfile import (
 from watch_this.exceptions import UnsupportedUploadedFileType
 
 
-def compute_division(division: str) -> float:
+def compute_division(division: str) -> Optional[float]:
+    if division == "N/A":
+        return None
+
     a, b = division.split("/")
     return float(a) / float(b)
 
@@ -48,6 +52,9 @@ def get_video_info(file: UploadedFile) -> dict:
         key: round(compute_division(value) if "/" in value else float(value), 2)
         for key, value in (line.split("=") for line in ffprobe.stdout.decode().split())
     }
+
+    if not info["nb_frames"]:
+        info["nb_frames"] = round(info["avg_frame_rate"] * info["duration"])
 
     info["mime"] = mime
     return info
