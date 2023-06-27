@@ -6,6 +6,7 @@ from wagtail.models import CollectionMember
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 
+from . import get_render_model
 from .storage import upload_to
 
 
@@ -36,6 +37,15 @@ class UserUpload(models.Model):
 class RemoteVideoFile(models.Model):
     class Meta:
         abstract = True
+
+    INFORMATION_FIELDS = (
+        "mime",
+        "duration",
+        "width",
+        "height",
+        "frames_per_second",
+        "frame_count",
+    )
 
     file = models.FileField(
         upload_to=upload_to,
@@ -119,6 +129,19 @@ class AbstractVideo(index.Indexed, CollectionMember, TimestampedModel, UserUploa
         ),
         index.FilterField("uploaded_by_user"),
     ]
+
+    @property
+    def rendered(self) -> list:
+        return [
+            {
+                "url": render.file.url,
+                **{
+                    field: getattr(render, field)
+                    for field in RemoteVideoFile.INFORMATION_FIELDS
+                },
+            }
+            for render in get_render_model().objects.filter(video=self)
+        ]
 
 
 @register_snippet
