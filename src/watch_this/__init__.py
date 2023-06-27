@@ -30,3 +30,25 @@ def get_video_model():
             "WATCH_THIS_VIDEO_MODEL refers to model '%s' that has not been installed"
             % model_string
         )
+
+
+def get_render_model_string():
+    return getattr(settings, "WATCH_THIS_RENDER_MODEL", "watch_this.Render")
+
+
+def get_render_model():
+    from django.apps import apps
+
+    model_string = get_render_model_string()
+
+    try:
+        return apps.get_model(model_string, require_ready=False)
+    except ValueError:
+        raise ImproperlyConfigured(
+            "WATCH_THIS_RENDER_MODEL must be of the form 'app_label.model_name'"
+        )
+    except LookupError:
+        raise ImproperlyConfigured(
+            "WATCH_THIS_RENDER_MODEL refers to model '%s' that has not been installed"
+            % model_string
+        )

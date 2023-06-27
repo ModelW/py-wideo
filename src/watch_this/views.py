@@ -23,6 +23,7 @@ from wagtail.models import Collection
 from wagtail.search.backends import get_search_backend
 
 from . import get_video_model
+from .ffmpeg import get_video_info
 from .forms import BaseVideoForm, UploadedVideoForm, VideoForm
 from .permissions import permission_policy
 
@@ -349,7 +350,19 @@ def upload_file(request: HttpRequest) -> HttpResponse:
     if request.method != "POST":
         return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    form = UploadedVideoForm(request.POST, request.FILES)
+    video_info = get_video_info(request.FILES["file"])
+    form = UploadedVideoForm(
+        {
+            **request.POST,
+            "mime": video_info["mime"],
+            "duration": video_info["duration"],
+            "width": video_info["width"],
+            "height": video_info["height"],
+            "frames_per_second": video_info["avg_frame_rate"],
+            "frame_count": video_info["nb_frames"],
+        },
+        request.FILES,
+    )
 
     if not form.is_valid():
         return HttpResponse(status=status.HTTP_400_BAD_REQUEST, content=form.errors)

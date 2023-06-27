@@ -1,5 +1,3 @@
-import uuid
-
 from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -25,7 +23,7 @@ class UserUpload(models.Model):
         abstract = True
 
     uploaded_by_user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        to=settings.AUTH_USER_MODEL,
         verbose_name=_("uploaded by user"),
         null=True,
         blank=True,
@@ -35,13 +33,45 @@ class UserUpload(models.Model):
     uploaded_by_user.wagtail_reference_index_ignore = True
 
 
-class UploadedVideo(TimestampedModel, UserUpload):
+class RemoteVideoFile(models.Model):
+    class Meta:
+        abstract = True
+
     file = models.FileField(
         upload_to=upload_to,
         verbose_name=_("file"),
         help_text=_("The uploaded video file"),
     )
+    mime = models.CharField(
+        max_length=100,
+        verbose_name=_("mime type"),
+        help_text=_("MIME type of the video"),
+    )
+    duration = models.FloatField(
+        verbose_name=_("duration in seconds"),
+        help_text=_("Duration of the video in seconds"),
+    )
+    width = models.IntegerField(
+        verbose_name=_("original width"),
+        help_text=_("Width of the video in pixels"),
+    )
+    height = models.IntegerField(
+        verbose_name=_("original height"),
+        help_text=_("Height of the video in pixels"),
+    )
+    frames_per_second = models.DecimalField(
+        verbose_name=_("original FPS"),
+        help_text=_("FPS of the video"),
+        max_digits=5,
+        decimal_places=2,
+    )
+    frame_count = models.IntegerField(
+        verbose_name=_("original frame count"),
+        help_text=_("Number of frames in the video"),
+    )
 
+
+class UploadedVideo(TimestampedModel, UserUpload, RemoteVideoFile):
     def __str__(self) -> str:
         return str(self.file)
 
@@ -103,7 +133,7 @@ class Video(AbstractVideo):
         return self.title
 
 
-class AbstractRender(TimestampedModel):
+class AbstractRender(TimestampedModel, RemoteVideoFile):
     """
     If a video as processed correctly, a render is created with pointers to
     all the outputs of the rendering process.
@@ -112,48 +142,11 @@ class AbstractRender(TimestampedModel):
     class Meta:
         abstract = True
 
-    thumbnails = models.JSONField(
-        default=dict,
-        verbose_name=_("Thumbnails"),
-        help_text=_("Thumbnails of the video"),
-    )
-    videos = models.JSONField(
-        default=dict,
-        verbose_name=_("videos"),
-        help_text=_("Web-rendered videos"),
-    )
-    duration_seconds = models.FloatField(
-        verbose_name=_("duration in seconds"),
-        help_text=_("Duration of the video in seconds"),
-    )
-    original_width = models.IntegerField(
-        verbose_name=_("original width"),
-        help_text=_("Width of the original video in pixels"),
-    )
-    original_height = models.IntegerField(
-        verbose_name=_("original height"),
-        help_text=_("Height of the original video in pixels"),
-    )
-    original_fps = models.DecimalField(
-        verbose_name=_("original FPS"),
-        help_text=_("FPS of the original video"),
-        max_digits=5,
-        decimal_places=2,
-    )
-    original_frame_count = models.IntegerField(
-        verbose_name=_("original frame count"),
-        help_text=_("Number of frames in the original video"),
-    )
-
 
 class Render(AbstractRender):
-    video = models.OneToOneField(
+    video = models.ForeignKey(
         to=Video,
         on_delete=models.CASCADE,
         verbose_name=_("video"),
         help_text=_("The video that was rendered"),
     )
-
-
-class SourceVideoIOError(IOError):
-    pass
