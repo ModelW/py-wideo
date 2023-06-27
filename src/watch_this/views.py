@@ -22,9 +22,10 @@ from wagtail.admin.views import generic
 from wagtail.models import Collection
 from wagtail.search.backends import get_search_backend
 
-from . import get_video_model
+from . import get_render_model, get_video_model
 from .ffmpeg import get_video_info
 from .forms import BaseVideoForm, UploadedVideoForm, VideoForm
+from .models import UploadedVideo
 from .permissions import permission_policy
 
 permission_checker = PermissionPolicyChecker(permission_policy)
@@ -310,7 +311,8 @@ def edit(request, video_id):
         {
             "video": video,
             "form": form,
-            "url_generator_enabled": url_generator_enabled,
+            # This is not supported right now
+            # "url_generator_enabled": url_generator_enabled,
             "filesize": filesize,
             "user_can_delete": permission_policy.user_has_permission_for_instance(
                 request.user, "delete", video
@@ -369,3 +371,57 @@ def upload_file(request: HttpRequest) -> HttpResponse:
 
     instance = form.save()
     return HttpResponse(status=status.HTTP_201_CREATED, content=instance.id)
+
+
+def get_uploaded_video_render(
+    request: HttpRequest, uploaded_video_id: int
+) -> HttpResponse:
+    """
+    Given an UploadedVideo by its ID, return its information as if it was a
+    unique Render.
+
+    This is intended to be used in the Video add/edit templates inside Wagtail
+    admin, where we expect to have an UploadedVideo instance when a video file
+    is uploaded but no Video instance will be created until the form is
+    submitted (therefore, no Render instance will be created yet). However, we
+    still want to get the information of the video to display a preview in that
+    add/edit template, so we get its information as if we were getting a unique
+    Render so that we can use it with a video library.
+    """
+    if request.method != "GET":
+        return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    video = get_object_or_404(UploadedVideo, id=uploaded_video_id)
+
+    data = {
+        "type": "video",
+        "title": "Video preview",
+        "sources": [
+            {
+                "src": video.file.url,
+                "type": video.mime,
+                "size": 720,
+            }
+        ],
+        #     poster: '/path/to/poster.jpg',
+        #     previewThumbnails: {
+        #         src: '/path/to/thumbnails.vtt',
+        #     },
+        #     tracks: [
+        #         {
+        #             kind: 'captions',
+        #             label: 'English',
+        #             srclang: 'en',
+        #             src: '/path/to/captions.en.vtt',
+        #             default: true,
+        #         },
+        #         {
+        #             kind: 'captions',
+        #             label: 'French',
+        #             srclang: 'fr',
+        #             src: '/path/to/captions.fr.vtt',
+        #         },
+        #     ],
+    }
+
+    return HttpResponse(status=status.HTTP_200_OK, content=json.dumps(data))

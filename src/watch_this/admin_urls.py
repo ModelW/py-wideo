@@ -14,4 +14,9 @@ urlpatterns = [
     path("<int:video_id>/", watch_this.views.edit, name="edit"),
     path("<int:video_id>/delete/", watch_this.views.delete, name="delete"),
     path("upload/", watch_this.views.upload_file, name="upload"),
+    path(
+        "get_uploaded_video_render/<int:uploaded_video_id>/",
+        watch_this.views.get_uploaded_video_render,
+        name="get-uploaded-video-render",
+    ),
 ]

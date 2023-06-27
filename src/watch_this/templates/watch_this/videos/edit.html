@@ -1,10 +1,12 @@
 {% extends "wagtailadmin/base.html" %}
 {% load wagtailadmin_tags i18n l10n %}
-{% block titletag %}{% blocktrans trimmed with title=video.title %}Editing video {{ title }}{% endblocktrans %}{% endblock %}
+{% block titletag %}{% blocktrans trimmed with title=video.title %}Editing video {{ title }}
+{% endblocktrans %}{% endblock %}
 {% block extra_css %}
     {{ block.super }}
-
     {{ form.media.css }}
+
+    {% include "watch_this/preview/plyr_styles.html" %}
 {% endblock %}
 
 {% block extra_js %}
@@ -15,8 +17,8 @@
     {% url 'wagtailadmin_tag_autocomplete' as autocomplete_url %}
     <script>
         $(function() {
-            $('#id_tags').tagit({
-                autocomplete: {source: "{{ autocomplete_url|addslashes }}"}
+            $("#id_tags").tagit({
+                autocomplete: { source: "{{ autocomplete_url|addslashes }}" },
             });
         });
     </script>
@@ -27,34 +29,25 @@
     {% include "wagtailadmin/shared/header.html" with title=editing_str subtitle=video.title icon="video" %}
     {% include "wagtailadmin/shared/non_field_errors.html" %}
 
-    <form action="{% url 'watch_this:edit' video.id %}" method="POST" enctype="multipart/form-data" novalidate>
+    <form action="{% url 'watch_this:edit' video.id %}" method="POST" enctype="multipart/form-data" novalidate
+          class="col6">
         {% csrf_token %}
         <input type="hidden" value="{{ next }}" name="next">
         <div class="row row-flush nice-padding">
-            <div class="col6">
-                {% for field in form %}
-                    {% if field.name == 'upload' %}
-                        {% include "watch_this/forms/file_edit.html" %}
-                    {% elif field.is_hidden %}
-                        {{ field }}
-                    {% else %}
-                        {% include "wagtailadmin/shared/field.html" %}
-                    {% endif %}
-                {% endfor %}
-                <div class="w-hidden sm:w-block">
-                    <input type="submit" value="{% trans 'Save' %}" class="button" />
-                    {% if user_can_delete %}
-                        <a href="{% url 'watch_this:delete' video.id %}{% if next %}?next={{ next|urlencode }}{% endif %}" class="button no">{% trans "Delete video" %}</a>
-                    {% endif %}
-                </div>
-            </div>
-
-            <div class="col6">
-{#                {% video video max-800x600 as rendition %}#}
-
-                {% if url_generator_enabled %}
-                    <a href="{% url 'watch_this:url_generator' video.id %}" class="button bicolor button--icon">{% icon name="link" wrapped=1 %}{% trans "URL Generator" %}</a>
-                    <hr />
+            {% for field in form %}
+                {% if field.name == 'upload' %}
+                    {% include "watch_this/forms/file_edit.html" %}
+                {% elif field.is_hidden %}
+                    {{ field }}
+                {% else %}
+                    {% include "wagtailadmin/shared/field.html" %}
+                {% endif %}
+            {% endfor %}
+            <div class="w-hidden sm:w-block">
+                <input type="submit" value="{% trans 'Save' %}" class="button" />
+                {% if user_can_delete %}
+                    <a href="{% url 'watch_this:delete' video.id %}{% if next %}?next={{ next|urlencode }}{% endif %}"
+                       class="button no">{% trans "Delete video" %}</a>
                 {% endif %}
             </div>
         </div>
@@ -63,9 +56,18 @@
             <div class="col5">
                 <input type="submit" value="{% trans 'Save' %}" class="button" />
                 {% if user_can_delete %}
-                    <a href="{% url 'watch_this:delete' video.id %}{% if next %}?next={{ next }}{% endif %}" class="button no">{% trans "Delete video" %}</a>
+                    <a href="{% url 'watch_this:delete' video.id %}{% if next %}?next={{ next }}{% endif %}"
+                       class="button no">{% trans "Delete video" %}</a>
                 {% endif %}
             </div>
         </div>
     </form>
+
+    <div class="col6">
+        <div class="video-container">
+            <video id="player" playsinline controls></video>
+        </div>
+    </div>
+
+    {% include "watch_this/preview/video_source.html" with current_video_id=video.upload.id %}
 {% endblock %}
