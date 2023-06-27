@@ -19,6 +19,10 @@ def compute_division(division: str) -> Optional[float]:
     return float(a) / float(b)
 
 
+def try_round(n: Optional[float]) -> Optional[float]:
+    return round(n, 2) if n is not None else n
+
+
 def get_video_info(file: UploadedFile) -> dict:
     if isinstance(file, InMemoryUploadedFile):
         filename = "-"
@@ -49,7 +53,7 @@ def get_video_info(file: UploadedFile) -> dict:
     )
 
     info = {
-        key: round(compute_division(value) if "/" in value else float(value), 2)
+        key: try_round(compute_division(value) if "/" in value else float(value))
         for key, value in (line.split("=") for line in ffprobe.stdout.decode().split())
     }
 
