@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
                                 (
                                     "video",
                                     wagtail.snippets.blocks.SnippetChooserBlock(
-                                        target_model="watch_this.video"
+                                        target_model="wideo.video"
                                     ),
                                 ),
                                 (

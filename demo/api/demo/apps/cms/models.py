@@ -7,8 +7,8 @@ from wagtail.documents.models import AbstractDocument
 from wagtail.fields import StreamField
 from wagtail.images.models import AbstractImage, AbstractRendition
 from wagtail.images.models import Image as DefaultImage
-from watch_this.blocks import VideoBlock
-from watch_this.fields import VideoField
+from wideo.blocks import VideoBlock
+from wideo.fields import VideoField
 
 
 class CustomImage(AbstractImage):

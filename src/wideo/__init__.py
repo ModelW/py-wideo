@@ -7,7 +7,7 @@ def get_video_model_string():
     Get the dotted ``app.Model`` name for the video model as a string, just like
     ``get_image_model_string()`` from wagtailimages.
     """
-    return getattr(settings, "WATCH_THIS_VIDEO_MODEL", "watch_this.Video")
+    return getattr(settings, "WIDEO_VIDEO_MODEL", "wideo.Video")
 
 
 def get_video_model():
@@ -23,17 +23,17 @@ def get_video_model():
         return apps.get_model(model_string, require_ready=False)
     except ValueError:
         raise ImproperlyConfigured(
-            "WATCH_THIS_VIDEO_MODEL must be of the form 'app_label.model_name'"
+            "WIDEO_VIDEO_MODEL must be of the form 'app_label.model_name'"
         )
     except LookupError:
         raise ImproperlyConfigured(
-            "WATCH_THIS_VIDEO_MODEL refers to model '%s' that has not been installed"
+            "WIDEO_VIDEO_MODEL refers to model '%s' that has not been installed"
             % model_string
         )
 
 
 def get_render_model_string():
-    return getattr(settings, "WATCH_THIS_RENDER_MODEL", "watch_this.Render")
+    return getattr(settings, "WIDEO_RENDER_MODEL", "wideo.Render")
 
 
 def get_render_model():
@@ -45,10 +45,10 @@ def get_render_model():
         return apps.get_model(model_string, require_ready=False)
     except ValueError:
         raise ImproperlyConfigured(
-            "WATCH_THIS_RENDER_MODEL must be of the form 'app_label.model_name'"
+            "WIDEO_RENDER_MODEL must be of the form 'app_label.model_name'"
         )
     except LookupError:
         raise ImproperlyConfigured(
-            "WATCH_THIS_RENDER_MODEL refers to model '%s' that has not been installed"
+            "WIDEO_RENDER_MODEL refers to model '%s' that has not been installed"
             % model_string
         )

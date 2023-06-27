@@ -31,7 +31,7 @@ with EnvManager(ModelWDjango()) as env:
         "django_extensions",
         "django.forms",
         "wagtail.contrib.modeladmin",
-        "watch_this",
+        "wideo",
         "demo.apps.realtime",
         "demo.apps.cms",
         "demo.apps.people",
@@ -88,8 +88,8 @@ with EnvManager(ModelWDjango()) as env:
     # ---
 
     CELERY_BEAT_SCHEDULE = {
-        "watch_this.tasks.delete_orphan_uploaded_videos": {
-            "task": "watch_this.tasks.delete_orphan_uploaded_videos",
+        "wideo.tasks.delete_orphan_uploaded_videos": {
+            "task": "wideo.tasks.delete_orphan_uploaded_videos",
             "schedule": crontab(minute="*/5", hour="*"),
         },
     }

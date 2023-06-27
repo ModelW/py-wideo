@@ -13,10 +13,10 @@ def register_icons(icons: list[str]) -> list[str]:
 @hooks.register("register_admin_urls")
 def register_admin_urls() -> list:
     return [
-        path(f"{__package__}/", include(admin_urls, namespace="watch_this")),
+        path(f"{__package__}/", include(admin_urls, namespace="wideo")),
     ]
 
 
 @hooks.register("register_admin_menu_item")
 def register_videos_menu_item() -> MenuItem:
-    return MenuItem("Videos", reverse("watch_this:index"), icon_name="video")
+    return MenuItem("Videos", reverse("wideo:index"), icon_name="video")

@@ -27,7 +27,7 @@
                     // allow an event handler to customise data or call event.preventDefault to stop any title pre-filling
                     const form = $(this).closest("form").get(0);
                     const event = form.dispatchEvent(new CustomEvent(
-                        "watch_this:videos-upload",
+                        "wideo:videos-upload",
                         {
                             bubbles: true,
                             cancelable: true,
@@ -56,7 +56,7 @@
     {{ block.super }}
     {{ form.media.css }}
 
-    {% include "watch_this/preview/plyr_styles.html" %}
+    {% include "wideo/preview/plyr_styles.html" %}
 {% endblock %}
 
 {% block content %}
@@ -66,7 +66,7 @@
     <div class="nice-padding">
         {% include "wagtailadmin/shared/non_field_errors.html" %}
 
-        <form action="{% url 'watch_this:add' %}" method="POST" enctype="multipart/form-data" novalidate class="col6">
+        <form action="{% url 'wideo:add' %}" method="POST" enctype="multipart/form-data" novalidate class="col6">
             {% csrf_token %}
             <ul class="fields">
                 {% for field in form %}
@@ -87,5 +87,5 @@
         </div>
     </div>
 
-    {% include "watch_this/preview/video_source.html" %}
+    {% include "wideo/preview/video_source.html" %}
 {% endblock %}

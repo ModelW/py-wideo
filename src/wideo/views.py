@@ -30,8 +30,8 @@ from .permissions import permission_policy
 
 permission_checker = PermissionPolicyChecker(permission_policy)
 
-INDEX_PAGE_SIZE = getattr(settings, "WATCH_THIS_INDEX_PAGE_SIZE", 30)
-USAGE_PAGE_SIZE = getattr(settings, "WATCH_THIS_USAGE_PAGE_SIZE", 20)
+INDEX_PAGE_SIZE = getattr(settings, "WIDEO_INDEX_PAGE_SIZE", 30)
+USAGE_PAGE_SIZE = getattr(settings, "WIDEO_USAGE_PAGE_SIZE", 20)
 
 
 class BaseListingView(TemplateView):
@@ -122,7 +122,7 @@ class BaseListingView(TemplateView):
         paginator = Paginator(videos, per_page=entries_per_page)
         videos = paginator.get_page(self.request.GET.get("p"))
 
-        next_url = reverse("watch_this:index")
+        next_url = reverse("wideo:index")
         request_query_string = self.request.META.get("QUERY_STRING")
         if request_query_string:
             next_url += "?" + request_query_string
@@ -144,7 +144,7 @@ class BaseListingView(TemplateView):
 
 
 class IndexView(BaseListingView):
-    template_name = "watch_this/videos/index.html"
+    template_name = "wideo/videos/index.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -175,7 +175,7 @@ class IndexView(BaseListingView):
 
 
 class ListingResultsView(BaseListingView):
-    template_name = "watch_this/videos/results.html"
+    template_name = "wideo/videos/results.html"
 
 
 class DeleteView(generic.DeleteView):
@@ -184,10 +184,10 @@ class DeleteView(generic.DeleteView):
     permission_policy = permission_policy
     permission_required = "delete"
     header_icon = "video"
-    template_name = "watch_this/videos/confirm_delete.html"
-    usage_url_name = "watch_this:video_usage"
-    delete_url_name = "watch_this:delete"
-    index_url_name = "watch_this:index"
+    template_name = "wideo/videos/confirm_delete.html"
+    usage_url_name = "wideo:video_usage"
+    delete_url_name = "wideo:delete"
+    index_url_name = "wideo:index"
     page_title = gettext_lazy("Delete video")
 
     def setup(self, request, *args, **kwargs):
@@ -232,13 +232,11 @@ def add(request: HttpRequest) -> HttpResponse:
                 request,
                 _("Video '%(video_title)s' added.") % {"video_title": video.title},
                 buttons=[
-                    messages.button(
-                        reverse("watch_this:edit", args=(video.id,)), _("Edit")
-                    )
+                    messages.button(reverse("wideo:edit", args=(video.id,)), _("Edit"))
                 ],
             )
 
-            return redirect("watch_this:index")
+            return redirect("wideo:index")
         else:
             messages.error(request, _("The video could not be created due to errors."))
             form = VideoForm(request.POST, request.FILES, instance=video)
@@ -247,7 +245,7 @@ def add(request: HttpRequest) -> HttpResponse:
 
     return TemplateResponse(
         request,
-        "watch_this/videos/add.html",
+        "wideo/videos/add.html",
         {
             "form": form,
         },
@@ -273,8 +271,8 @@ def edit(request, video_id):
         if form.is_valid():
             form.save()
 
-            edit_url = reverse("watch_this:edit", args=(video.id,))
-            redirect_url = "watch_this:index"
+            edit_url = reverse("wideo:edit", args=(video.id,))
+            redirect_url = "wideo:index"
             if next_url:
                 edit_url = f"{edit_url}?{urlencode({'next': next_url})}"
                 redirect_url = next_url
@@ -293,7 +291,7 @@ def edit(request, video_id):
 
     # Check if we should enable the frontend url generator
     try:
-        reverse("watch_this_serve", args=("foo", "1", "bar"))
+        reverse("wideo_serve", args=("foo", "1", "bar"))
         url_generator_enabled = True
     except NoReverseMatch:
         url_generator_enabled = False
@@ -307,7 +305,7 @@ def edit(request, video_id):
 
     return TemplateResponse(
         request,
-        "watch_this/videos/edit.html",
+        "wideo/videos/edit.html",
         {
             "video": video,
             "form": form,
@@ -336,11 +334,11 @@ def delete(request, video_id):
     if request.method == "POST":
         video.delete()
         messages.success(request, _("Video '{0}' deleted.").format(video.title))
-        return redirect(next_url) if next_url else redirect("watch_this:index")
+        return redirect(next_url) if next_url else redirect("wideo:index")
 
     return TemplateResponse(
         request,
-        "watch_this/videos/confirm_delete.html",
+        "wideo/videos/confirm_delete.html",
         {
             "video": video,
             "next": next_url,

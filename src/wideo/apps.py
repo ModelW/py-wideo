@@ -6,4 +6,4 @@ class App(AppConfig):
 
     def ready(self):
         # Ensure Django registers signals
-        import watch_this.signals
+        import wideo.signals

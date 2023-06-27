@@ -7,7 +7,7 @@ import wagtail.search.index
 from django.conf import settings
 from django.db import migrations, models
 
-import watch_this.storage
+import wideo.storage
 
 
 class Migration(migrations.Migration):
@@ -42,7 +42,7 @@ class Migration(migrations.Migration):
                     "file",
                     models.FileField(
                         help_text="The uploaded video file",
-                        upload_to=watch_this.storage.upload_to,
+                        upload_to=wideo.storage.upload_to,
                         verbose_name="file",
                     ),
                 ),
@@ -166,7 +166,7 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         help_text="The uploaded video file",
                         on_delete=django.db.models.deletion.PROTECT,
-                        to="watch_this.uploadedvideo",
+                        to="wideo.uploadedvideo",
                         verbose_name="file",
                     ),
                 ),
@@ -209,7 +209,7 @@ class Migration(migrations.Migration):
                     "file",
                     models.FileField(
                         help_text="The uploaded video file",
-                        upload_to=watch_this.storage.upload_to,
+                        upload_to=wideo.storage.upload_to,
                         verbose_name="file",
                     ),
                 ),
@@ -263,7 +263,7 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         help_text="The video that was rendered",
                         on_delete=django.db.models.deletion.CASCADE,
-                        to="watch_this.video",
+                        to="wideo.video",
                         verbose_name="video",
                     ),
                 ),

@@ -8,7 +8,7 @@ from django.core.files.uploadedfile import (
     UploadedFile,
 )
 
-from watch_this.exceptions import UnsupportedUploadedFileType
+from wideo.exceptions import UnsupportedUploadedFileType
 
 
 def compute_division(division: str) -> Optional[float]:

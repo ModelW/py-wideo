@@ -2,8 +2,8 @@ from django.dispatch import receiver
 from django.test.signals import setting_changed
 from wagtail.permission_policies.collections import CollectionOwnershipPermissionPolicy
 
-from watch_this import get_video_model
-from watch_this.models import Video
+from wideo import get_video_model
+from wideo.models import Video
 
 permission_policy = None
 
@@ -22,7 +22,7 @@ def set_permission_policy():
 
 @receiver(setting_changed)
 def update_permission_policy(signal, sender, setting, **kwargs):
-    if setting == "WATCH_THIS_VIDEO_MODEL":
+    if setting == "WIDEO_VIDEO_MODEL":
         set_permission_policy()
 
 

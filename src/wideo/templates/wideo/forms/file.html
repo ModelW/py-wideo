@@ -37,7 +37,7 @@
             setSubmitDisabled(true);
             const form = new FormData();
             form.append("file", file);
-            fetch('{% url "watch_this:upload" %}', {
+            fetch('{% url "wideo:upload" %}', {
                 method: "POST",
                 body: form,
                 headers: {
@@ -52,7 +52,7 @@
                         hiddenInput.value = id;
 
                         window.dispatchEvent(new CustomEvent(
-                            "watch_this:video-upload-success",
+                            "wideo:video-upload-success",
                             { detail: { id } },
                         ));
                     });

@@ -1,6 +1,6 @@
 from django.db import models
 
-from watch_this import get_video_model_string
+from wideo import get_video_model_string
 
 
 class VideoField(models.ForeignKey):

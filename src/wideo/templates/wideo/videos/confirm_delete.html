@@ -22,11 +22,11 @@
                     Are you sure you want to delete these videos?
                 {% endblocktrans %}
             </p>
-            <form action="{% url 'watch_this:delete' video.id %}" method="POST">
+            <form action="{% url 'wideo:delete' video.id %}" method="POST">
                 {% csrf_token %}
                 <input type="hidden" value="{{ next }}" name="next">
                 <input type="submit" value="{% trans 'Yes, delete' %}" class="button serious" />
-                <a href="{% url 'watch_this:index' %}" class="button button-secondary">{% trans "No, don't delete" %}</a>
+                <a href="{% url 'wideo:index' %}" class="button button-secondary">{% trans "No, don't delete" %}</a>
             </form>
         </div>
     </div>

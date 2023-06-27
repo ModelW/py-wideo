@@ -20,9 +20,9 @@
         {% for video in videos %}
             <li>
                 {% include "wagtailadmin/bulk_actions/listing_checkbox_cell.html" with obj_type="video" obj=video aria_labelledby_prefix="select-video-label video_" aria_labelledby=video.pk|unlocalize aria_labelledby_suffix="_title" %}
-                <a class="video-choice" title="{% if collections %}{{ video.collection.name }} » {% endif %}{{ video.title }}" href="{% url 'watch_this:edit' video.id %}{% if next %}?next={{ next|urlencode }}{% endif %}">
+                <a class="video-choice" title="{% if collections %}{{ video.collection.name }} » {% endif %}{{ video.title }}" href="{% url 'wideo:edit' video.id %}{% if next %}?next={{ next|urlencode }}{% endif %}">
                     <figure>
-                        {% include "watch_this/videos/results_video.html" %}
+                        {% include "wideo/videos/results_video.html" %}
                         {% trans "pixels" as translated_pixels %}
                         <figcaption id="video_{{ video.pk|unlocalize }}_title">
                             {{ video.title|ellipsistrim:60 }}
@@ -42,12 +42,12 @@
 
         {% search_other %}
     {% else %}
-        {% url 'watch_this:add' as watch_this_add_video_url %}
-        {% with watch_this_add_video_url|add:querystring as watch_this_add_video_url %}
+        {% url 'wideo:add' as wideo_add_video_url %}
+        {% with wideo_add_video_url|add:querystring as wideo_add_video_url %}
             {% if current_collection %}
-                <p>{% blocktrans trimmed %}You haven't uploaded any videos in this collection. Why not <a href="{{ watch_this_add_video_url }}">upload one now</a>?{% endblocktrans %}</p>
+                <p>{% blocktrans trimmed %}You haven't uploaded any videos in this collection. Why not <a href="{{ wideo_add_video_url }}">upload one now</a>?{% endblocktrans %}</p>
             {% else %}
-                <p>{% blocktrans trimmed %}You haven't uploaded any videos. Why not <a href="{{ watch_this_add_video_url }}">upload one now</a>?{% endblocktrans %}</p>
+                <p>{% blocktrans trimmed %}You haven't uploaded any videos. Why not <a href="{{ wideo_add_video_url }}">upload one now</a>?{% endblocktrans %}</p>
             {% endif %}
         {% endwith %}
     {% endif %}
