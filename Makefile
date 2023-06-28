@@ -12,6 +12,7 @@ endif
 release: check_release
 	git flow release start $(VERSION)
 	sed -i 's/^version =.*/version = "$(VERSION)"/' pyproject.toml
-	git add pyproject.toml
+	sed -i 's/^release =.*/release = "$(VERSION)"/' doc/source/conf.py
+	git add pyproject.toml doc
 	git commit -m "Bump version to $(VERSION)"
 	git flow release finish -m "Release $(VERSION)" $(VERSION) > /dev/null
