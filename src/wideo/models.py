@@ -129,6 +129,11 @@ class AbstractVideo(index.Indexed, CollectionMember, TimestampedModel, UserUploa
         ),
         index.FilterField("uploaded_by_user"),
     ]
+    admin_form_fields = (
+        "title",
+        "upload",
+        "tags",
+    )
 
     @property
     def rendered(self) -> list:
@@ -143,17 +148,13 @@ class AbstractVideo(index.Indexed, CollectionMember, TimestampedModel, UserUploa
             for render in get_render_model().objects.filter(video=self)
         ]
 
+    def __str__(self):
+        return self.title
+
 
 @register_snippet
 class Video(AbstractVideo):
-    admin_form_fields = (
-        "title",
-        "upload",
-        "tags",
-    )
-
-    def __str__(self):
-        return self.title
+    pass
 
 
 class AbstractRender(TimestampedModel, RemoteVideoFile):
