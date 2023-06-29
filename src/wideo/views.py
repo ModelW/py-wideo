@@ -3,7 +3,7 @@ import json
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
-from django.http import HttpRequest, HttpResponse, QueryDict
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.template.response import TemplateResponse
 from django.urls import NoReverseMatch, reverse
@@ -22,7 +22,7 @@ from wagtail.admin.views import generic
 from wagtail.models import Collection
 from wagtail.search.backends import get_search_backend
 
-from . import get_render_model, get_video_model
+from . import get_video_model
 from .ffmpeg import get_video_info
 from .forms import BaseVideoForm, UploadedVideoForm, VideoForm
 from .models import UploadedVideo
@@ -351,18 +351,7 @@ def upload_file(request: HttpRequest) -> HttpResponse:
         return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     video_info = get_video_info(request.FILES["file"])
-    form = UploadedVideoForm(
-        {
-            **request.POST,
-            "mime": video_info["mime"],
-            "duration": video_info["duration"],
-            "width": video_info["width"],
-            "height": video_info["height"],
-            "frames_per_second": video_info["avg_frame_rate"],
-            "frame_count": video_info["nb_frames"],
-        },
-        request.FILES,
-    )
+    form = UploadedVideoForm({**request.POST, **video_info}, request.FILES)
 
     if not form.is_valid():
         return HttpResponse(status=status.HTTP_400_BAD_REQUEST, content=form.errors)

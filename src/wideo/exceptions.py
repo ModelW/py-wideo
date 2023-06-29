@@ -1,2 +1,2 @@
-class UnsupportedUploadedFileType(Exception):
+class InvalidVideoFile(Exception):
     pass
