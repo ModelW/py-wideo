@@ -7,11 +7,12 @@ from typing import BinaryIO, Optional
 import magic
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUploadedFile
+from django.db.transaction import atomic
 
 from . import get_render_model, get_video_model
 from .codecs import get_presets
 from .exceptions import InvalidVideoFile
-from .models import RemoteVideoFile
+from .models import AbstractRender, AbstractVideo, RemoteVideoFile
 
 
 def compute_division(division: str) -> Optional[float]:
@@ -87,17 +88,47 @@ def encode_video(video_id: int):
     """
     Encodes a specific video with whichever presets have been specified in the settings.
     """
-    video = get_video_model().objects.filter(id=video_id).first()
 
-    if not video:
-        return
+    with atomic():
+        # Before anything else, flag the video as being processed
+        if (
+            video := get_video_model()
+            .objects.select_for_update()
+            .filter(id=video_id)
+            .first()
+        ):
+            video.status = AbstractVideo.ProcessStatus.processing
+            video.save()
+        else:
+            return
+
+    # Encapsulating everything in a separate function makes it easier to try/except, and
+    # thus to make sure the status of the video is always changed at the end.
+    # noinspection PyBroadException
+    try:
+        status = (
+            AbstractVideo.ProcessStatus.success
+            if encode_video_impl(video)
+            else AbstractVideo.ProcessStatus.failed
+        )
+    except Exception:
+        status = AbstractVideo.ProcessStatus.failed
+
+    get_video_model().objects.filter(id=video_id).update(status=status)
+
+
+def encode_video_impl(video: AbstractVideo) -> bool:
+    """
+    The actual implementation of the video encoding using ffmpeg. Return `True` if the
+    encoding went down as intended, or `False` if something went wrong.
+    """
 
     working_dir = mkdtemp()
     presets_map = get_presets()
     renders = {}
     ffmpegs = []
 
-    def get_render_temp_file(r: get_render_model()) -> str:
+    def get_render_temp_file(r: AbstractRender) -> str:
         """
         Creates a simple unique path to a temporary file, used for storing outputs of
         ffmpeg.
@@ -130,7 +161,7 @@ def encode_video(video_id: int):
         command = f"ffmpeg -y -i {input_file_path} -f {preset['extension']} {' '.join(flags)} {get_render_temp_file(render)}"
         ffmpegs.append(subprocess.Popen(command, shell=True))
 
-    def cleanup():
+    def abort_everything():
         """
         If something goes wrong during processing (invalid file...), stop everything and
         ensure we don't keep any unused Render objects.
@@ -145,8 +176,8 @@ def encode_video(video_id: int):
     # and abort everything immediately)
     for ffmpeg in ffmpegs:
         if ffmpeg.wait():
-            cleanup()
-            return
+            abort_everything()
+            return False
 
     # After all videos have been correctly generated, we just need to write them into
     # their respective Render objects
@@ -169,3 +200,5 @@ def encode_video(video_id: int):
                 setattr(render, field, video_info[field])
 
             render.save()
+
+    return True
