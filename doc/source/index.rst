@@ -8,6 +8,8 @@ The goal of Wideo is to enable video handling in Wagtail.
    :caption: Contents:
 
    installation
+   cleanup-task
+   custom-presets
    custom-models
    contributing
 

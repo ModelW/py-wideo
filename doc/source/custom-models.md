@@ -11,7 +11,7 @@ The different sections of this document describe the steps to use custom models.
 I lied. Before customization, it's necessary to first explain what models are at
 play and why.
 
-### `UplaodedVideo`
+### `UploadedVideo`
 
 This model represents a raw, unencoded video that a user uploaded using the
 Wagtail admin interface. It notably has a `FileField` pointing to the uploaded

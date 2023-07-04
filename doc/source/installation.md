@@ -1,7 +1,41 @@
 # Installation
 
-In order to install Wideo, you need to:
-1. Add the `wideo` dependency to your `requirements.txt` or `poetry.toml` (and ensure `wagtail` and `celery` are also part of your dependencies)
-2. Add `wideo` to `INSTALLED_APPS` in your Django settings
-3. Optional: set `WIDEO_VIDEO_MODEL` and `WIDEO_RENDER_MODEL` to your own custom models
-4. Optional: add `wideo.tasks.delete_orphan_uploaded_videos` in your `CELERY_BEAT_SCHEDULE` in order to clean up unused uploads
+## Add `wideo` to your dependencies
+
+With Poetry, run:
+
+```shell
+poetry add wideo
+```
+
+With pip, add:
+
+```
+wideo==<version>
+```
+
+To your `requirements.txt`.
+
+## Use `wideo`
+
+Simply add `wideo` to your installed apps in your Django settings:
+
+```python
+INSTALLED_APPS = [
+    "[...]",  # Django & Wagtail
+    "wideo",
+    "[...]",  # Your own apps
+]
+```
+
+## Optional: clean up unused uploads
+
+See the full documentation [here](cleanup-task).
+
+## Optional: use custom presets
+
+See the full documentation [here](custom-presets).
+
+## Optional: use custom models
+
+See the full documentation [here](custom-models).
