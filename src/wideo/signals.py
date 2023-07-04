@@ -3,7 +3,7 @@ from django.dispatch import receiver
 
 from . import get_video_model
 from .models import AbstractVideo, UploadedVideo
-from .tasks import encode_video
+from .tasks import encode_video, is_celery_present
 
 
 @receiver(pre_delete, sender=UploadedVideo)
@@ -23,7 +23,7 @@ def on_video_pre_save(instance: AbstractVideo, *args, **kwargs):
     and generate the new renders.
     """
     if old_instance := get_video_model().objects.filter(id=instance.id).first():
-        if old_instance.upload_id != instance.upload_id:
+        if old_instance.upload_id != instance.upload_id and is_celery_present():
             encode_video.delay(video_id=instance.id)
 
 
@@ -32,5 +32,5 @@ def on_video_post_save(instance: AbstractVideo, created: bool, *args, **kwargs):
     """
     Whenever a video is created, encode the video file and generate the renders.
     """
-    if created:
+    if created and is_celery_present():
         encode_video.delay(video_id=instance.id)
