@@ -28,9 +28,9 @@ INSTALLED_APPS = [
 ]
 ```
 
-## Optional: clean up unused uploads
+## Set up encoding and cleanup tasks
 
-See the full documentation [here](cleanup-task).
+See the full documentation [here](tasks).
 
 ## Optional: use custom presets
 
