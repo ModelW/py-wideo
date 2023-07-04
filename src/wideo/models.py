@@ -6,8 +6,17 @@ from wagtail.models import CollectionMember
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 
-from . import get_render_model
+from . import get_render_model, get_video_model
 from .storage import upload_to
+
+
+def delete_orphan_uploaded_videos():
+    """
+    Delete all the instances of UploadedVideo that are not related to any Video
+    anymore (result of changing the video file while editing a Video).
+    """
+    used_ids = get_video_model().objects.values("upload_id")
+    UploadedVideo.objects.exclude(id__in=used_ids).delete()
 
 
 class TimestampedModel(models.Model):
