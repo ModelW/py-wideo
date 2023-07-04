@@ -61,7 +61,13 @@ def get_presets() -> dict:
     Retrieve the map of available presets from the Django settings if specified.
     Fallback to the default list of presets.
     """
-    return getattr(settings, "WIDEO_PRESETS", DEFAULT_PRESETS)
+    presets: dict[str, str | dict] = getattr(settings, "WIDEO_PRESETS", DEFAULT_PRESETS)
+
+    return {
+        # If a preset is the name of a default preset, get the preset dict from there
+        name: (DEFAULT_PRESETS.get(preset) if isinstance(preset, str) else preset)
+        for name, preset in presets.items()
+    }
 
 
 DEFAULT_PRESETS = {
