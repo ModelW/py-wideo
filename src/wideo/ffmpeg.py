@@ -1,17 +1,20 @@
 import subprocess
+import uuid
+from os import makedirs
 from os.path import join
+from shutil import rmtree
 from subprocess import run
-from tempfile import mkdtemp
 from typing import BinaryIO, Optional
 
 import magic
+from django.conf import settings
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUploadedFile
 from django.db.transaction import atomic
 
 from . import get_render_model, get_video_model
 from .codecs import get_presets
-from .exceptions import InvalidVideoFile
+from .exceptions import ConfigurationError, InvalidVideoFile
 from .models import AbstractRender, AbstractVideo, RemoteVideoFile
 
 
@@ -89,8 +92,15 @@ def encode_video(video_id: int):
     Encodes a specific video with whichever presets have been specified in the settings.
     """
 
+    wideo_working_dir = getattr(settings, "WIDEO_WORKING_DIR")
+    task_working_dir = join(wideo_working_dir, str(uuid.uuid4()))
+    makedirs(task_working_dir)
+
+    if not wideo_working_dir:
+        raise ConfigurationError
+
     with atomic():
-        # Before anything else, flag the video as being processed
+        # Before the actual encoding part, flag the video as being processed
         if (
             video := get_video_model()
             .objects.select_for_update()
@@ -108,22 +118,23 @@ def encode_video(video_id: int):
     try:
         status = (
             AbstractVideo.ProcessStatus.success
-            if encode_video_impl(video)
+            if encode_video_impl(video, task_working_dir)
             else AbstractVideo.ProcessStatus.failed
         )
     except Exception:
         status = AbstractVideo.ProcessStatus.failed
+    finally:
+        rmtree(task_working_dir)
 
     get_video_model().objects.filter(id=video_id).update(status=status)
 
 
-def encode_video_impl(video: AbstractVideo) -> bool:
+def encode_video_impl(video: AbstractVideo, working_dir: str) -> bool:
     """
     The actual implementation of the video encoding using ffmpeg. Return `True` if the
     encoding went down as intended, or `False` if something went wrong.
     """
 
-    working_dir = mkdtemp()
     presets_map = get_presets()
     renders = {}
     ffmpegs = []
@@ -196,9 +207,9 @@ def encode_video_impl(video: AbstractVideo) -> bool:
             # previously created Render objects
             video_info = get_video_info(file)
 
-            for field in RemoteVideoFile.INFORMATION_FIELDS:
-                setattr(render, field, video_info[field])
+        for field in RemoteVideoFile.INFORMATION_FIELDS:
+            setattr(render, field, video_info[field])
 
-            render.save()
+        render.save()
 
     return True

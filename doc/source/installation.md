@@ -16,7 +16,7 @@ wideo==<version>
 
 To your `requirements.txt`.
 
-## Use `wideo`
+## Use the `wideo` app
 
 Simply add `wideo` to your installed apps in your Django settings:
 
@@ -27,6 +27,19 @@ INSTALLED_APPS = [
     "[...]",  # Your own apps
 ]
 ```
+
+## Mandatory configuration
+
+###`WIDEO_WORKING_DIR`
+
+Video files can get very large, and thus are not kept in memory. This setting
+should point to an empty directory that can be used by Wideo to do write and
+read temporary files.
+
+Choose carefully what directory to use! On Linux for example, it might seem
+tempting to use something along the lines of `/tmp/wideo`. However, `/tmp` is
+often mounted as `tmpfs`, which is a virtual filesystem that can actually reside
+in-memory instead of being kept on disk. Therefore, anything under
 
 ## Set up encoding and cleanup tasks
 
