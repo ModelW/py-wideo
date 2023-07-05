@@ -1,5 +1,9 @@
+import functools
+from typing import Any, Callable
+
 from django.conf import settings
 from django.db import models
+from django.db.transaction import atomic
 from django.utils.translation import gettext_lazy as _
 from taggit.managers import TaggableManager
 from wagtail.models import CollectionMember
@@ -17,6 +21,19 @@ def delete_orphan_uploaded_videos():
     """
     used_ids = get_video_model().objects.values("upload_id")
     UploadedVideo.objects.exclude(id__in=used_ids).delete()
+
+
+def locking(name: str) -> Callable:
+    def decorator(func: Callable) -> Callable:
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs) -> Any:
+            with atomic():
+                Lock.objects.select_for_update().get_or_create(name=name)
+                return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
 
 
 class TimestampedModel(models.Model):
@@ -183,3 +200,7 @@ class Render(AbstractRender):
         verbose_name=_("video"),
         help_text=_("The video that was rendered"),
     )
+
+
+class Lock(models.Model):
+    name = models.TextField(unique=True)
