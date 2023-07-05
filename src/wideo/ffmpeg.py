@@ -116,17 +116,18 @@ def encode_video(video_id: int):
     # thus to make sure the status of the video is always changed at the end.
     # noinspection PyBroadException
     try:
-        status = (
-            AbstractVideo.ProcessStatus.success
+        get_video_model().objects.filter(id=video_id).update(
+            status=AbstractVideo.ProcessStatus.success
             if encode_video_impl(video, task_working_dir)
             else AbstractVideo.ProcessStatus.failed
         )
     except Exception:
-        status = AbstractVideo.ProcessStatus.failed
+        get_video_model().objects.filter(id=video_id).update(
+            status=AbstractVideo.ProcessStatus.failed
+        )
+        raise
     finally:
         rmtree(task_working_dir)
-
-    get_video_model().objects.filter(id=video_id).update(status=status)
 
 
 def encode_video_impl(video: AbstractVideo, working_dir: str) -> bool:
