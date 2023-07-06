@@ -2,12 +2,12 @@ from django.db.models.signals import post_delete, post_save, pre_delete, pre_sav
 from django.dispatch import receiver
 
 from . import get_render_model, get_video_model
-from .models import AbstractRender, AbstractVideo, UploadedVideo
+from .models import AbstractRender, AbstractVideo, UploadedVideoChunk
 from .tasks import encode_video, is_celery_present
 
 
-@receiver(pre_delete, sender=UploadedVideo)
-def on_uploaded_video_pre_delete(instance: UploadedVideo, *args, **kwargs):
+@receiver(pre_delete, sender=UploadedVideoChunk)
+def on_uploaded_video_chunk_pre_delete(instance: UploadedVideoChunk, *args, **kwargs):
     instance.file.delete(save=False)
 
 

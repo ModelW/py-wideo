@@ -3,7 +3,9 @@ import json
 from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
+from django.db.transaction import atomic
 from django.http import HttpRequest, HttpResponse
+from django.http.multipartparser import MultiPartParser
 from django.shortcuts import get_object_or_404, redirect
 from django.template.response import TemplateResponse
 from django.urls import NoReverseMatch, reverse
@@ -22,10 +24,9 @@ from wagtail.admin.views import generic
 from wagtail.models import Collection
 from wagtail.search.backends import get_search_backend
 
-from . import get_video_model
-from .ffmpeg import get_video_info
-from .forms import BaseVideoForm, UploadedVideoForm, VideoForm
-from .models import UploadedVideo
+from . import get_render_model, get_video_model
+from .forms import BaseVideoForm, VideoForm
+from .models import UploadedVideo, UploadedVideoChunk
 from .permissions import permission_policy
 
 permission_checker = PermissionPolicyChecker(permission_policy)
@@ -346,18 +347,28 @@ def delete(request, video_id):
     )
 
 
-def upload_file(request: HttpRequest) -> HttpResponse:
+@atomic
+def upload_prepare(request: HttpRequest) -> HttpResponse:
     if request.method != "POST":
         return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    video_info = get_video_info(request.FILES["file"])
-    form = UploadedVideoForm({**request.POST, **video_info}, request.FILES)
+    upload = UploadedVideo.objects.create()
+    return HttpResponse(status=status.HTTP_201_CREATED, content=upload.id)
 
-    if not form.is_valid():
-        return HttpResponse(status=status.HTTP_400_BAD_REQUEST, content=form.errors)
 
-    instance = form.save()
-    return HttpResponse(status=status.HTTP_201_CREATED, content=instance.id)
+@atomic
+def upload_chunk(request: HttpRequest) -> HttpResponse:
+    if request.method != "PUT":
+        return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    data, files = MultiPartParser(
+        request.META, request, request.upload_handlers
+    ).parse()
+    upload = get_object_or_404(UploadedVideo, id=data["upload_id"])
+    UploadedVideoChunk.objects.update_or_create(
+        video=upload, index=data["index"], defaults={"file": files["blob"]}
+    )
+    return HttpResponse(status=status.HTTP_200_OK)
 
 
 def get_uploaded_video_render(
@@ -378,17 +389,18 @@ def get_uploaded_video_render(
     if request.method != "GET":
         return HttpResponse(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    video = get_object_or_404(UploadedVideo, id=uploaded_video_id)
-
     data = {
         "type": "video",
         "title": "Video preview",
         "sources": [
             {
-                "src": video.file.url,
-                "type": video.mime,
-                "size": 720,
+                "src": render.file.url,
+                "type": render.mime,
+                "size": render.height,
             }
+            for render in get_render_model().objects.filter(
+                video__upload_id=uploaded_video_id
+            )
         ],
         #     poster: '/path/to/poster.jpg',
         #     previewThumbnails: {

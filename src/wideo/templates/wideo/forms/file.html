@@ -26,41 +26,68 @@
 
     {% include "django/forms/widgets/input.html" %}
 
+    <span>{# Upload percentage #}</span>
+
     <script>
         const videoFileInputs = document.getElementsByName('{{ widget.name }}');
         const videoFileInput = videoFileInputs.item(videoFileInputs.length - 1);
+        const spans = document.getElementsByTagName("span");
+        const percentage = spans[spans.length - 1];
         videoFileInput.removeAttribute("name");
         videoFileInput.removeAttribute("required");
 
-        function uploadFile(file) {
+        async function uploadFile(file) {
             videoFileInput.disabled = true;
+            percentage.innerText = "0%";
             setSubmitDisabled(true);
-            const form = new FormData();
-            form.append("file", file);
-            fetch('{% url "wideo:upload" %}', {
+
+            const response = await fetch('{% url "wideo:upload-prepare" %}', {
                 method: "POST",
-                body: form,
-                headers: {
-                    "x-csrftoken": getCookie("csrftoken"),
-                },
-            }).then(response => {
-                videoFileInput.disabled = false;
-
-                if (response.ok) {
-                    setSubmitDisabled(false);
-                    response.text().then(id => {
-                        hiddenInput.value = id;
-
-                        window.dispatchEvent(new CustomEvent(
-                            "wideo:video-upload-success",
-                            { detail: { id } },
-                        ));
-                    });
-
-                } else {
-                    videoFileInput.value = null;
-                }
+                headers: { "x-csrftoken": getCookie("csrftoken") },
             });
+            const uploadId = await response.text();
+
+            let index = 0;
+            let offset = 0;
+            const chunkSize = 100 * 1024;
+
+            while (offset < file.size) {
+                const chunk = file.slice(offset, offset + chunkSize);
+                index++;
+                offset += chunkSize;
+                const success = await uploadChunk(uploadId, index, chunk);
+
+                if (!success) {
+                    videoFileInput.disabled = false;
+                    videoFileInput.value = null;
+                    percentage.innerText = "";
+                    return;
+                }
+
+                percentage.innerText = (Math.round(100 * offset / file.size)) + "%";
+            }
+
+            hiddenInput.value = uploadId;
+            videoFileInput.disabled = false;
+            percentage.innerText = "";
+            setSubmitDisabled(false);
+            window.dispatchEvent(new CustomEvent(
+                "wideo:video-upload-success",
+                { detail: { id: uploadId } },
+            ));
+        }
+
+        async function uploadChunk(uploadId, index, blob) {
+            const form = new FormData();
+            form.append("upload_id", uploadId);
+            form.append("index", index)
+            form.append("blob", blob);
+            const response = await fetch('{% url "wideo:upload-chunk" %}', {
+                method: "PUT",
+                body: form,
+                headers: { "x-csrftoken": getCookie("csrftoken") },
+            });
+            return response.ok;
         }
 
         videoFileInput.addEventListener("input", event => uploadFile(event.target.files[0]));

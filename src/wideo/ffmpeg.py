@@ -153,12 +153,13 @@ def encode_video_impl(video: AbstractVideo, working_dir: str) -> bool:
     # The input file must be written to the disk so that ffmpeg can access it randomly.
     # Streaming the file directly to ffmpeg's stdin would be simpler, but ffmpeg would
     # then not always be able to determine what type of file is its input.
-    with video.upload.file.open("rb") as uploaded_file:
-        input_file_path = join(working_dir, "input")
 
-        with open(input_file_path, "wb") as input_file:
-            while buf := uploaded_file.read(1024**2):
-                input_file.write(buf)
+    input_file_path = join(working_dir, "input")
+
+    with open(input_file_path, "wb") as input_file:
+        for chunk in video.upload.chunks.order_by("index"):
+            with chunk.file.open("rb") as chunk_file:
+                input_file.write(chunk_file.read())
 
     for preset_label, preset in presets_map.items():
         # Fill the render with bogus data until we can get info from the encoded videos

@@ -1,4 +1,5 @@
 import functools
+from datetime import timedelta
 from typing import Any, Callable
 
 from django.conf import settings
@@ -110,9 +111,30 @@ class RemoteVideoFile(models.Model):
     )
 
 
-class UploadedVideo(TimestampedModel, UserUpload, RemoteVideoFile):
-    def __str__(self) -> str:
-        return str(self.file)
+class UploadedVideo(TimestampedModel, UserUpload):
+    pass
+
+
+class UploadedVideoChunk(models.Model):
+    class Meta:
+        unique_together = ("video", "index")
+
+    video = models.ForeignKey(
+        to=UploadedVideo,
+        on_delete=models.CASCADE,
+        related_name="chunks",
+        verbose_name=_("video"),
+        help_text=_("The video the chunk is part of"),
+    )
+    index = models.IntegerField(
+        verbose_name=_("index"),
+        help_text=_("The position of the chunk in the uploaded video"),
+    )
+    file = models.FileField(
+        upload_to=upload_to,
+        verbose_name=_("file"),
+        help_text=_("The uploaded chunk"),
+    )
 
 
 class AbstractVideo(index.Indexed, CollectionMember, TimestampedModel, UserUpload):
