@@ -26,19 +26,19 @@
 
     {% include "django/forms/widgets/input.html" %}
 
-    <span>{# Upload percentage #}</span>
+    <span>{# Upload progress or error message #}</span>
 
     <script>
         const videoFileInputs = document.getElementsByName('{{ widget.name }}');
         const videoFileInput = videoFileInputs.item(videoFileInputs.length - 1);
         const spans = document.getElementsByTagName("span");
-        const percentage = spans[spans.length - 1];
+        const progress = spans[spans.length - 1];
         videoFileInput.removeAttribute("name");
         videoFileInput.removeAttribute("required");
 
         async function uploadFile(file) {
             videoFileInput.disabled = true;
-            percentage.innerText = "0%";
+            progress.innerText = "0%";
             setSubmitDisabled(true);
 
             const response = await fetch('{% url "wideo:upload-prepare" %}', {
@@ -59,23 +59,23 @@
                 if (success) {
                     index++;
                     offset += chunkSize;
-                    percentage.innerText = (Math.round(100 * offset / file.size)) + "%";
+                    progress.innerText = (Math.round(100 * offset / file.size)) + "%";
                 } else {
                     failures++;
                     await sleep();
                 }
 
-                if (failures >= 10) {
+                if (failures >= 1) {
                     videoFileInput.disabled = false;
                     videoFileInput.value = null;
-                    percentage.innerText = "";
+                    progress.innerText = "Upload failed";
                     return;
                 }
             }
 
             hiddenInput.value = uploadId;
             videoFileInput.disabled = false;
-            percentage.innerText = "";
+            progress.innerText = "";
             setSubmitDisabled(false);
             window.dispatchEvent(new CustomEvent(
                 "wideo:video-upload-success",
