@@ -1,5 +1,6 @@
 {% extends "wagtailadmin/shared/field.html" %}
 {% load i18n %}
+{% load settings %}
 {% block form_field %}
     <input type="hidden" name="{{ widget.name }}" required>
 
@@ -50,7 +51,7 @@
             let failures = 0;
             let index = 0;
             let offset = 0;
-            const chunkSize = 5 * 1024 * 1024;
+            const chunkSize = {% settings "WIDEO_CHUNK_SIZE" 5242880 %}; {# 5242880 = 5 * 1024 * 1024 #}
 
             while (offset < file.size) {
                 const chunk = file.slice(offset, offset + chunkSize);

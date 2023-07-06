@@ -101,3 +101,5 @@ with EnvManager(ModelWDjango()) as env:
     # ---
 
     WIDEO_WORKING_DIR = Path(__file__).parent.parent.parent / "wideo_work"
+
+    WIDEO_CHUNK_SIZE = 100 * 1024
