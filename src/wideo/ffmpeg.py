@@ -109,6 +109,8 @@ def encode_video(video_id: int):
         ):
             video.status = AbstractVideo.ProcessStatus.processing
             video.save()
+            # Since we are going to create new renders, delete any previous ones
+            get_render_model().objects.filter(video=video).delete()
         else:
             return
 
