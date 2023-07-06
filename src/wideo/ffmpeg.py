@@ -15,7 +15,7 @@ from django.db.transaction import atomic
 from . import get_render_model, get_video_model
 from .codecs import get_presets
 from .exceptions import ConfigurationError, InvalidVideoFile
-from .models import AbstractRender, AbstractVideo, RemoteVideoFile, locking
+from .models import AbstractRender, AbstractVideo, RemoteVideoFile, lock
 
 
 def compute_division(division: str) -> Optional[float]:
@@ -132,7 +132,7 @@ def encode_video(video_id: int):
         rmtree(task_working_dir)
 
 
-@locking("encode_video")
+@lock("encode_video")
 def encode_video_impl(video: AbstractVideo, working_dir: str) -> bool:
     """
     The actual implementation of the video encoding using ffmpeg. Return `True` if the

@@ -26,7 +26,7 @@ def delete_orphan_uploaded_videos():
     ).delete()
 
 
-def locking(name: str) -> Callable:
+def lock(name: str) -> Callable:
     def decorator(func: Callable) -> Callable:
         @functools.wraps(func)
         def wrapper(*args, **kwargs) -> Any:
