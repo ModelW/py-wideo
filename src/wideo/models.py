@@ -1,13 +1,43 @@
+import functools
+from datetime import timedelta
+from typing import Any, Callable
+
 from django.conf import settings
 from django.db import models
+from django.db.transaction import atomic
+from django.utils.timezone import now
 from django.utils.translation import gettext_lazy as _
 from taggit.managers import TaggableManager
 from wagtail.models import CollectionMember
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 
-from . import get_render_model
+from . import get_render_model, get_video_model
 from .storage import upload_to
+
+
+def delete_orphan_uploaded_videos():
+    """
+    Delete all the instances of UploadedVideo that are not related to any Video
+    anymore (result of changing the video file while editing a Video).
+    """
+    used_ids = get_video_model().objects.values("upload_id")
+    UploadedVideo.objects.exclude(id__in=used_ids).filter(
+        created_at__lt=now() - timedelta(days=1)
+    ).delete()
+
+
+def lock(name: str) -> Callable:
+    def decorator(func: Callable) -> Callable:
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs) -> Any:
+            with atomic():
+                Lock.objects.select_for_update().get_or_create(name=name)
+                return func(*args, **kwargs)
+
+        return wrapper
+
+    return decorator
 
 
 class TimestampedModel(models.Model):
@@ -81,9 +111,30 @@ class RemoteVideoFile(models.Model):
     )
 
 
-class UploadedVideo(TimestampedModel, UserUpload, RemoteVideoFile):
-    def __str__(self) -> str:
-        return str(self.file)
+class UploadedVideo(TimestampedModel, UserUpload):
+    pass
+
+
+class UploadedVideoChunk(models.Model):
+    class Meta:
+        unique_together = ("video", "index")
+
+    video = models.ForeignKey(
+        to=UploadedVideo,
+        on_delete=models.CASCADE,
+        related_name="chunks",
+        verbose_name=_("video"),
+        help_text=_("The video the chunk is part of"),
+    )
+    index = models.IntegerField(
+        verbose_name=_("index"),
+        help_text=_("The position of the chunk in the uploaded video"),
+    )
+    file = models.FileField(
+        upload_to=upload_to,
+        verbose_name=_("file"),
+        help_text=_("The uploaded chunk"),
+    )
 
 
 class AbstractVideo(index.Indexed, CollectionMember, TimestampedModel, UserUpload):
@@ -174,3 +225,7 @@ class Render(AbstractRender):
         verbose_name=_("video"),
         help_text=_("The video that was rendered"),
     )
+
+
+class Lock(models.Model):
+    name = models.TextField(unique=True)

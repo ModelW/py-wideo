@@ -13,7 +13,8 @@ urlpatterns = [
     path("add/", wideo.views.add, name="add"),
     path("<int:video_id>/", wideo.views.edit, name="edit"),
     path("<int:video_id>/delete/", wideo.views.delete, name="delete"),
-    path("upload/", wideo.views.upload_file, name="upload"),
+    path("upload/prepare/", wideo.views.upload_prepare, name="upload-prepare"),
+    path("upload/chunk/", wideo.views.upload_chunk, name="upload-chunk"),
     path(
         "get_uploaded_video_render/<int:uploaded_video_id>/",
         wideo.views.get_uploaded_video_render,

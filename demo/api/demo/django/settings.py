@@ -1,4 +1,6 @@
 from importlib import metadata
+from os.path import join
+from pathlib import Path
 
 from celery.schedules import crontab
 from model_w.env_manager import EnvManager
@@ -93,3 +95,11 @@ with EnvManager(ModelWDjango()) as env:
             "schedule": crontab(minute="*/5", hour="*"),
         },
     }
+
+    # ---
+    # Wideo
+    # ---
+
+    WIDEO_WORKING_DIR = Path(__file__).parent.parent.parent / "wideo_work"
+
+    WIDEO_CHUNK_SIZE = 100 * 1024
