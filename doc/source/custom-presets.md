@@ -2,7 +2,7 @@
 
 ## Default presets
 
-By default, `wideo` will encode your videos according to the following presets:
+Wideo has the following presets:
 
 | Preset name | Resolution | Format |
 |-------------|------------|--------|
@@ -12,6 +12,10 @@ By default, `wideo` will encode your videos according to the following presets:
 | 720P_AV1    | 720p       | AV1    |
 | 1080P_AV1   | 1080p      | AV1    |
 | 4K_AV1      | 4k         | AV1    |
+
+By default, the H264 encodings are used. AV1 encoding can be extremely long, and
+thus is not enabled by default; however you can reference them in custom
+presets.
 
 ## Customization
 
