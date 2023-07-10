@@ -65,16 +65,20 @@ def get_presets() -> dict:
 
     return {
         # If a preset is the name of a default preset, get the preset dict from there
-        name: (DEFAULT_PRESETS.get(preset) if isinstance(preset, str) else preset)
+        name: (KNOWN_PRESETS.get(preset) if isinstance(preset, str) else preset)
         for name, preset in presets.items()
     }
 
 
-DEFAULT_PRESETS = {
+KNOWN_PRESETS = {
     "4K_H264": build_preset(Codec.H264, "4K"),
     "1080_H264": build_preset(Codec.H264, "1080P"),
     "720P_H264": build_preset(Codec.H264, "720P"),
     "4K_AV1": build_preset(Codec.AV1, "4K"),
     "1080_AV1": build_preset(Codec.AV1, "1080P"),
     "720P_AV1": build_preset(Codec.AV1, "720P"),
+}
+
+DEFAULT_PRESETS = {
+    name: preset for name, preset in KNOWN_PRESETS.items() if name.endswith("H264")
 }
