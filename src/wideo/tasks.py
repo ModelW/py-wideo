@@ -8,7 +8,7 @@ def is_celery_present() -> bool:
     Checks is Celery is supposed to be used. Reasonably, checking `CELERY_BROKER_URL`
     should be a reliable indicator of whether the current project uses Celery or not.
     """
-    return bool(settings.CELERY_BROKER_URL)
+    return bool(getattr(settings, "CELERY_BROKER_URL", False))
 
 
 @shared_task
