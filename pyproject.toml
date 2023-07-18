@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "wideo"
-version = "0.2.1"
+version = "0.2.2"
 description = "Add video goodness to your Wagtail website"
 authors = []
 license = "WTFPL"
