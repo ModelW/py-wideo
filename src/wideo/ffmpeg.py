@@ -8,7 +8,7 @@ from typing import BinaryIO, Optional
 
 import magic
 from django.conf import settings
-from django.core.files.base import ContentFile
+from django.core.files.base import File
 from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUploadedFile
 from django.db.transaction import atomic
 
@@ -143,6 +143,17 @@ def encode_video_impl(video: AbstractVideo, working_dir: str) -> bool:
     renders = {}
     ffmpegs = []
 
+    def abort_everything():
+        """
+        If something goes wrong during processing (invalid file...), stop everything and
+        ensure we don't keep any unused Render objects.
+        """
+        for f in ffmpegs:
+            f.kill()
+
+        for r in renders.values():
+            r.delete()
+
     def get_render_temp_file(r: AbstractRender) -> str:
         """
         Creates a simple unique path to a temporary file, used for storing outputs of
@@ -175,21 +186,21 @@ def encode_video_impl(video: AbstractVideo, working_dir: str) -> bool:
         renders[preset_label] = render
         flags = preset["ffmpeg_flags"]
         command = f"ffmpeg -y -i {input_file_path} -f {preset['extension']} {' '.join(flags)} {get_render_temp_file(render)}"
-        ffmpegs.append(subprocess.Popen(command, shell=True))
+        ffmpeg = subprocess.Popen(command, shell=True)
 
-    def abort_everything():
-        """
-        If something goes wrong during processing (invalid file...), stop everything and
-        ensure we don't keep any unused Render objects.
-        """
-        for f in ffmpegs:
-            f.kill()
+        # If parallel work is disabled, wait for each ffmpeg process synchronously to
+        # avoid having more than one running at once, and panic if any of them fails.
+        # If parallel work is enabled, store the processes to check for their result
+        # later on.
+        if getattr(settings, "WIDEO_PARALLEL_WORK", False):
+            ffmpegs.append(ffmpeg)
+        elif ffmpeg.wait():
+            abort_everything()
+            return False
 
-        for r in renders.values():
-            r.delete()
-
-    # Wait for all ffmpeg processes to successfully finish their job (otherwise, panic
-    # and abort everything immediately)
+    # When parallel work is enabled, `ffmpegs` will contain a list with all ffmpeg
+    # process that we should wait for. As for when parallel work is disabled, if any of
+    # them has failed, panic and abort everything.
     for ffmpeg in ffmpegs:
         if ffmpeg.wait():
             abort_everything()
@@ -202,11 +213,10 @@ def encode_video_impl(video: AbstractVideo, working_dir: str) -> bool:
 
         with open(get_render_temp_file(render), "rb") as file:
             name = f"{render.video.title}_{preset_label}.{preset['extension']}"
-            render.file = ContentFile(b"", name=name)
-
-            with render.file.open("wb") as target:
-                while buf := file.read(1024**2):
-                    target.write(buf)
+            uploaded_file = File(file)
+            # Saving the file this way is necessary; `render.file = File(file, name)`
+            # does not work
+            render.file.save(name, uploaded_file, save=True)
 
             # Don't forget to get info from the generated videos, and to store it in the
             # previously created Render objects

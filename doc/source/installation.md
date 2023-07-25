@@ -48,6 +48,16 @@ them down to small pieces in order to upload them. `WIDEO_CHUNK_SIZE` allows you
 to choose exactly what size each chunk of the video files will be (5M by
 default).
 
+### `WIDEO_PARALLEL_WORK` (optional)
+
+If you have enough memory and processing power, parallel processing of files can
+be enabled by setting this variable to `True`. Videos will then be encoded
+according to every enabled preset at the same time. If set to `False` or unset,
+Videos will be encoded following each preset sequentially.
+
+Note that ffmpeg can consume a very large amount of memory, which is why this
+setting is disabled by default.
+
 ## Set up encoding and cleanup tasks
 
 See the full documentation [here](tasks).
