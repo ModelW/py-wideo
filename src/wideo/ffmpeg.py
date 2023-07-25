@@ -8,7 +8,7 @@ from typing import BinaryIO, Optional
 
 import magic
 from django.conf import settings
-from django.core.files.base import ContentFile
+from django.core.files.base import File
 from django.core.files.uploadedfile import InMemoryUploadedFile, TemporaryUploadedFile
 from django.db.transaction import atomic
 
@@ -202,11 +202,10 @@ def encode_video_impl(video: AbstractVideo, working_dir: str) -> bool:
 
         with open(get_render_temp_file(render), "rb") as file:
             name = f"{render.video.title}_{preset_label}.{preset['extension']}"
-            render.file = ContentFile(b"", name=name)
-
-            with render.file.open("wb") as target:
-                while buf := file.read(1024**2):
-                    target.write(buf)
+            uploaded_file = File(file)
+            # Saving the file this way is necessary; `render.file = File(file, name)`
+            # does not work
+            render.file.save(name, uploaded_file, save=True)
 
             # Don't forget to get info from the generated videos, and to store it in the
             # previously created Render objects
