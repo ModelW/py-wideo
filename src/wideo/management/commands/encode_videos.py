@@ -1,5 +1,5 @@
 from django.core.management import BaseCommand
-from django.utils.translation import gettext_lazy as _
+from django.utils.translation import gettext as _
 
 from ... import get_video_model
 from ...ffmpeg import encode_video
