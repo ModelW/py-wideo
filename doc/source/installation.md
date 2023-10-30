@@ -39,7 +39,9 @@ read temporary files.
 Choose carefully what directory to use! On Linux for example, it might seem
 tempting to use something along the lines of `/tmp/wideo`. However, `/tmp` is
 often mounted as `tmpfs`, which is a virtual filesystem that can actually reside
-in-memory instead of being kept on disk. Therefore, anything under
+in-memory instead of being kept on disk. Therefore, using anything under this
+directory would defeat the purpose of writing files to the disk, and potentially
+cause issues due to lack of available memory when uploading large videos.
 
 ### `WIDEO_CHUNK_SIZE` (optional)
 
