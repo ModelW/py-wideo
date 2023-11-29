@@ -73,9 +73,13 @@ def get_presets() -> dict:
 KNOWN_PRESETS = {
     "4K_H264": build_preset(Codec.H264, "4K"),
     "1080_H264": build_preset(Codec.H264, "1080P"),
+    "1080P_H264": build_preset(Codec.H264, "1080P"),
+    "720_H264": build_preset(Codec.H264, "720P"),
     "720P_H264": build_preset(Codec.H264, "720P"),
     "4K_AV1": build_preset(Codec.AV1, "4K"),
     "1080_AV1": build_preset(Codec.AV1, "1080P"),
+    "1080P_AV1": build_preset(Codec.AV1, "1080P"),
+    "720_AV1": build_preset(Codec.AV1, "720P"),
     "720P_AV1": build_preset(Codec.AV1, "720P"),
 }
 
