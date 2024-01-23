@@ -152,7 +152,9 @@ class AbstractVideo(index.Indexed, CollectionMember, TimestampedModel, UserUploa
         to=UploadedVideo,
         on_delete=models.PROTECT,
         verbose_name=_("file"),
-        help_text=_("The uploaded video file"),
+        help_text=_(
+            "The uploaded video file; its resolution should be a standard one to avoid issues"
+        ),
     )
     status = models.CharField(
         max_length=max(len(x) for x, _ in ProcessStatus.choices),
