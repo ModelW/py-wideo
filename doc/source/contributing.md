@@ -1,8 +1,8 @@
 # Contributing
 
-Yay you want to contribute! Here are a few rules.
+Yay, you want to contribute! Here are a few rules.
 
-This repository follows the [WITH Madrid](https://code.with-madrid.com/) code 
+This repository follows the [WITH Madrid](https://code.with-madrid.com/) code
 guidelines. Specifically, this means that:
 
 - Git is managed using git-flow
@@ -21,6 +21,18 @@ rely on Makefile shortcut. From the root of the repo you can simply:
 ```
 make format
 ```
+
+## Releasing
+
+Releases are done using GitHub actions. All you need to do is:
+
+```
+make release VERSION=0.1.2
+```
+
+After replacing `0.1.2` with your release version of course. Then push, and
+you're done; the continuous delivery will take over and push the new package to
+Pypi.
 
 ## Writing documentation
 
