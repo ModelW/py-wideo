@@ -9,8 +9,8 @@ packages = [{include = "wideo", from = "src"}]
 
 [tool.poetry.dependencies]
 python = "~3.11"
-wagtail = "~5.2"
-celery = "~5.3"
+wagtail = "~5.*"
+celery = "~5.*"
 python-magic = "^0.4.27"
 
 [tool.poetry.group.dev.dependencies]
