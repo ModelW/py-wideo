@@ -1,5 +1,37 @@
 # Installation
 
+## Add `ffmpeg` to the system dependencies
+
+The `wideo` library has `ffmpeg` as a system dependency. This means that, if
+`ffmpeg` is not installed in the system, you will get an error.
+In local development, you will need to install this library as directed 
+by your OS. 
+In deployments, to ensure `ffmpeg` is installed, create or edit the
+`model-w.toml` file in the root of your `api` folder, adding the following
+lines:
+
+```
+[apt.packages]
+ffmpeg = "*"
+```
+
+Then, in the `Dockerfile` of the `api` folder, make sure you are copying the
+`model-w.toml` file. Your `Dockerfile` should be now like this:
+
+```dockerfile
+FROM modelw/base:2024.04
+
+COPY --chown=user pyproject.toml poetry.lock model-w.toml ./
+
+RUN modelw-docker install
+
+COPY --chown=user . .
+
+RUN modelw-docker build
+
+CMD ["modelw-docker", "serve"]
+```
+
 ## Add `wideo` to your dependencies
 
 With Poetry, run:
