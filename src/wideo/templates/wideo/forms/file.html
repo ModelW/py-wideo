@@ -1,9 +1,7 @@
-{% extends "wagtailadmin/shared/field.html" %}
 {% load i18n %}
 {% load settings %}
 {% block form_field %}
     <input type="hidden" name="{{ widget.name }}" required>
-
     <script>
         function getCookie(name) {
             let cookieValue = null;
@@ -21,7 +19,6 @@
                     }
                 }
             }
-
             return cookieValue;
         }
 
@@ -36,11 +33,8 @@
         const uploadInputs = document.getElementsByName('{{ widget.name }}');
         const hiddenInput = uploadInputs.item(uploadInputs.length - 1);
     </script>
-
     {% include "django/forms/widgets/input.html" %}
-
     <span>{# Upload progress or error message #}</span>
-
     <script>
         const videoFileInputs = document.getElementsByName('{{ widget.name }}');
         const videoFileInput = videoFileInputs.item(videoFileInputs.length - 1);
