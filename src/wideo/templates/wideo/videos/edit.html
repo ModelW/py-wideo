@@ -44,7 +44,7 @@
                 {% endif %}
             {% endfor %}
 
-            <div class="hidden sm:block mt-4">
+            <div class="sm:block mt-4">
                 <input type="submit" value="{% trans 'Save' %}" class="button" />
                 {% if user_can_delete %}
                     <a href="{% url 'wideo:delete' video.id %}{% if next %}?next={{ next|urlencode }}{% endif %}"
