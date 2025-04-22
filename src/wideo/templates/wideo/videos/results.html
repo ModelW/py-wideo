@@ -14,7 +14,7 @@
     {% endif %}
 
     {# Used below for the checkbox aria_labelledby #}
-    <p class="visuallyhidden" id="select-video-label">{% trans "Select video" %}</p>
+    <p id="select-video-label" class="w-sr-only">{% trans "Select video" %}</p>
 
     <ul class="listing horiz videos">
         {% for video in videos %}
@@ -26,7 +26,7 @@
                         {% trans "pixels" as translated_pixels %}
                         <figcaption id="video_{{ video.pk|unlocalize }}_title">
                             {{ video.title|ellipsistrim:60 }}
-                            <span class="visuallyhidden">{{ video.width }} {{ translated_pixels  }} &#215; {{ video.height }} {{ translated_pixels}}</span>
+                            <span class="w-sr-only">{{ video.width }} {{ translated_pixels  }} &#215; {{ video.height }} {{ translated_pixels}}</span>
                         </figcaption>
                     </figure>
                 </a>
